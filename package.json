@@ -1,5 +1,5 @@
 {
-  "name": "mind-svg-vue",
+  "name": "mind.svg.vue",
   "version": "0.1.0",
   "description": "VUE's component for displaying and operating MindMap base on mind.svg.js",
   "main": ".lib/mindSvgVue.umd.min.js",
