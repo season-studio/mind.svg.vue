@@ -1,0 +1,44 @@
+{
+  "name": "mind-svg-vue",
+  "version": "0.1.0",
+  "description": "VUE's component for displaying and operating MindMap base on mind.svg.js",
+  "main": ".lib/mindSvgVue.umd.min.js",
+  "keywords": [
+    "MindMap",
+    "SVG",
+    "js",
+    "VUE"
+  ],
+  "author": "season studio",
+  "license": "MIT",
+  "homepage": "https://github.com/season-studio/mind.svg.vue",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/season-studio/mind.svg.vue.git"
+  },
+  "bugs": {
+    "url": "https://github.com/season-studio/mind.svg.vue/issues",
+    "email": "season_studio@outlook.com"
+  },
+  "scripts": {
+    "serve": "vue-cli-service serve src/debug.js",
+    "build-lib": "vue-cli-service build --target lib --name mindSvgVue --dest .lib src/lib.js",
+    "build-demo": "vue-cli-service build --dest .demo src/demo.js",
+    "build-all": "npm run build-lib && npm run build-demo",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "core-js": "^3.6.5",
+    "mind.svg.js": "^0.6.4",
+    "vue": "^2.6.11"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^4.4.4",
+    "@vue/cli-plugin-eslint": "^4.4.4",
+    "@vue/cli-service": "^4.4.4",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.7.2",
+    "eslint-plugin-vue": "^6.2.2",
+    "vue-template-compiler": "^2.6.11"
+  }
+}
