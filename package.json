@@ -1,6 +1,6 @@
 {
   "name": "mind.svg.vue",
-  "version": "0.1.0",
+  "version": "0.1.12",
   "description": "VUE's component for displaying and operating MindMap base on mind.svg.js",
   "main": ".lib/mindSvgVue.umd.min.js",
   "keywords": [
@@ -29,16 +29,16 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
-    "mind.svg.js": "^0.6.4",
-    "vue": "^2.6.11"
+    "mind.svg.js": "^0.6.9",
+    "vue": "^2.6.12"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^4.4.4",
-    "@vue/cli-plugin-eslint": "^4.4.4",
-    "@vue/cli-service": "^4.4.4",
+    "@vue/cli-plugin-babel": "^4.5.4",
+    "@vue/cli-plugin-eslint": "^4.5.4",
+    "@vue/cli-service": "^4.5.4",
     "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
-    "vue-template-compiler": "^2.6.11"
+    "vue-template-compiler": "^2.6.12"
   }
 }

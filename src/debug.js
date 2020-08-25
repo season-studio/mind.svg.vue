@@ -4,7 +4,7 @@ import {translate, lang, default as mindSvgVue} from "./lib";
 
 import App from './demo.vue'
 
-translate.map(lang.zhCN);
+translate.map(lang["zh-cn"]);
 
 Vue.config.productionTip = false
 

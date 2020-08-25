@@ -1,13 +1,19 @@
 /**
  * 动态触发链接
+ * @param {String} _url 链接地址
+ * @param {Object} _opt 选项，可以忽略
  */
-export function dynInvokeLink(_url, _target) {
+export function dynInvokeLink(_url, _opt) {
     if (_url) {
         const aElement = document.createElement("a");
         if (aElement) {
             aElement.href = _url;
             aElement.rel = "noopener";
-            _target && (aElement.target = _target);
+            if (_opt) {
+                for (const name in _opt) {
+                    aElement[name] = _opt[name];
+                }
+            }
             aElement.click();
         }
     }

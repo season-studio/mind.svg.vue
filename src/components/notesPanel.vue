@@ -1,6 +1,6 @@
 <template>
     <div :class="panelClass" :style="panelStyle">
-        <textarea class="notes-input" @blur="onSubmitValue" @keydown.esc.stop="onRestoreValue" @keydown.stop="nop" v-model="value"></textarea>
+        <textarea ref="input" class="notes-input" @blur="onSubmitValue" @keydown.esc.stop="onRestoreValue" @keydown.stop="nop"></textarea>
     </div>
 </template>
 
@@ -21,8 +21,7 @@
 export default {
     data() {
         return {
-            isModified: false,
-            value: ""
+            isModified: false
         };
     },
     props: {
@@ -31,37 +30,32 @@ export default {
             default: ""
         },
         panelStyle: Object,
-        initValue: String
+        initValue: {
+            type: String,
+            default: ""
+        }
     },
     methods: {
         nop() {},
         getResult() {
-            return this.value;
+            return this.$refs.input.value;
         },
         clear() {
-            if (this.initValue) {
-                this.value = "";
-                this.isModified = true;
-            }
+            this.$refs.input.value = "";
+            this.initValue && (this.isModified = true);
         },
-        onSubmitValue(_event) {
-            const node = _event.target;
-            if (node) {
-                this.value = this.value.trim();
-                if (this.initValue !== this.value) {
-                    this.isModified = true;
-                }
-            }
+        blur() {
+            this.onSubmitValue();
+        },
+        onSubmitValue() {
+            (this.initValue !== this.$refs.input.value) && (this.isModified = true);
         },
         onRestoreValue() {
-            this.value = this.initValue;
+            this.$refs.input.value = this.initValue;
         }
     },
     mounted() {
-        this.$nextTick(() => {
-            const initValue = String(this.initValue || "").trim();
-            this.value = initValue;
-        });
+        this.$nextTick(this.onRestoreValue.bind(this));
     }
 }
 </script>

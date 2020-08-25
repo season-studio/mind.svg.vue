@@ -27,9 +27,15 @@
                     'left': 'selectPreviousSibling',
                     'right': 'selectNextSibling',
                     'enter': 'editTopic',
-                    'delete': 'deleteTopic'
+                    'delete': 'deleteTopic',
+                    'ctrl+z': onUndo,
+                    'ctrl+y': onRedo
                 }" 
-                :mind-config="{draggable: true}"/>
+                :mind-config="{draggable: true}"
+                :show-edit-tools="true"
+                attachment-path="resources" 
+                @history-changed="onHistoryChanged"
+                @focus-topic-changed="onFocusChanged" />
         </div>
     </div>
 </template>
@@ -109,7 +115,25 @@
         methods: {
             onNew() {
                 window.mv = this.$refs.mindView.showMind(mindData);
+            },
+            onUndo() {
+                console.log("undo");
+                this.$refs.mindView.history.undo();
+            },
+            onRedo() {
+                this.$refs.mindView.history.redo();
+            },
+            onHistoryChanged(_count) {
+                console.warn(`history count: undo(${_count.undo}), redo(${_count.redo})`);
+            },
+            onFocusChanged(_topic) {
+                window["mindFocusTopic"] = _topic;
             }
+        },
+        mounted() {
+            this.$nextTick(() => {
+                window["mindHistory"] = this.$refs.mindView.history;
+            })
         }
     }
 </script>

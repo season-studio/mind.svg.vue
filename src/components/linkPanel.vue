@@ -6,7 +6,7 @@
                     <path d="M9 7L11 5A2 2 0 0 1 15 9L13 11M7 9L5 11A2 2 0 0 0 9 15L11 13M7 13L13 7" />
                 </svg>
             </div>
-            <input v-if="inEditLink" class="link-input" @blur="onConfirmLink" @keydown.enter.prevent.stop="onConfirmLink" @keydown.esc.prevent.stop="onCancelEdit" @keydown.stop="nop" />
+            <input v-if="inEditLink" class="link-input" ref="input" @blur="onConfirmLink" @keydown.enter.prevent.stop="onConfirmLink" @keydown.esc.prevent.stop="onCancelEdit" @keydown.stop="nop" />
             <div v-else class="link-field" @click="onTriggerLink">
                 {{ showValue }}
             </div>
@@ -157,11 +157,17 @@ export default {
         _T,
         nop() {},
         parseInitValue() {
-            if (this.initValue && String(this.initValue).startsWith(this.attachmentPrefix)) {
-                this.isAttachment = true;
-                this.showValue = String(this.initValue).substr(this.attachmentPrefix.length);
+            if (this.initValue) {
+                const initValue = String(this.initValue);
+                if (initValue.startsWith(this.attachmentPrefix)) {
+                    this.isAttachment = true;
+                    this.showValue = initValue.substr(this.attachmentPrefix.length);
+                } else {
+                    this.showValue = initValue;
+                    this.isAttachment = false;    
+                }
             } else {
-                this.showValue = this.initValue;
+                this.showValue = "";
                 this.isAttachment = false;
             }
         },
@@ -173,26 +179,29 @@ export default {
             this.showValue = null;
             this.isModified = true;
         },
+        blur() {
+            this.onConfirmLink();
+        },
         onTriggerLink() {
             if (this.isAttachment) {
                 this.queryAttachmentURL && this.queryAttachmentURL(this.showValue, (_url) => {
-                    utility.dynInvokeLink(_url, "_blank");
+                    utility.dynInvokeLink(_url, {target: "_blank"});
                 });
             } else {
-                utility.dynInvokeLink(this.showValue, "_blank");
+                utility.dynInvokeLink(this.showValue, {target: "_blank"});
             }
         },
         onEditLink() {
             this.inEditLink = true;
             this.$nextTick(() => {
                 if (!this.isAttachment) {
-                    const node = this.$el.querySelector("input.link-input");
-                    node && (node.value = this.showValue, node.focus());
+                    const node = this.$refs.input;
+                    node && (this.$refs.input.value = this.showValue, node.focus());
                 }
             });
         },
         onConfirmLink() {
-            const node = this.$el.querySelector("input.link-input");
+            const node = this.$refs.input;
             if (node && this.inEditLink) {
                 const value = String(node.value).trim();
                 if (value && (this.isAttachment || (value !== this.showValue))) {

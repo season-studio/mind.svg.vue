@@ -28,15 +28,15 @@
         <div v-if="mainEdit" class="mind-main-edit-box" :style="{paddingBottom:`${this.mainEdit.underHeight}px`, top:`${this.mainEdit.top}px`, left:`${this.mainEdit.left}px`}">
             <input class="mind-title-input" :style="{width:`${this.mainEdit.titleWidth}px`, height:`${this.mainEdit.titleHeight}px`}" v-model="mainEdit.title"
                 @keydown.enter.stop="onConfirmTitle" @keydown.esc.prevent.stop="onRestoreTitle" @keydown.stop="nop" />
-            <div class="mind-main-edit-toolbar mind-main-edit-toolbar-top">
+            <div class="mind-main-edit-toolbar mind-main-edit-toolbar-top" v-if="showEditTools">
                 <item-with-tip :tip="_T('add sub topic')" class="mind-main-edit-button" @click="onAddSubTopic">
                     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="20" height="18">
-                        <path d="M1 10H5M3 8V12M7 10V6H17V10H7V14H17V10" />
+                        <path d="M3 3H15V7H3V3M6 10H12M9 8V12M3 13H15V17H3V13" />
                     </svg>
                 </item-with-tip>
                 <item-with-tip :tip="_T('add sibling topic')" class="mind-main-edit-button" @click="onAddSiblingTopic">
                     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="20" height="18">
-                        <path d="M3 3H15V7H3V3M6 10H12M9 8V12M3 13H15V17H3V13" />
+                        <path d="M1 10H5M3 8V12M7 10V6H17V10H7V14H17V10" />
                     </svg>
                 </item-with-tip>
                 <item-with-tip :tip="_T('delete this topic')" class="mind-main-edit-button mind-main-delete-button" @click="onDeleteTopic">
@@ -45,29 +45,29 @@
                     </svg>
                 </item-with-tip>
             </div>
-            <div class="mind-main-edit-toolbar mind-main-edit-toolbar-bottom">
+            <div class="mind-main-edit-toolbar mind-main-edit-toolbar-bottom" v-if="showEditAddingTools">
                 {{_T("add")}}:&nbsp;&nbsp;
-                <item-with-tip :tip="_T('markers')" v-if="!mainEdit.hasMarkers" item-class="mind-main-edit-button" @click="onInvokePropertyFromMainEdit('markers')">
+                <item-with-tip :tip="_T('markers')" v-if="checkAddTools('markers')" item-class="mind-main-edit-button" @click="onInvokePropertyFromMainEdit('markers')">
                     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="22" width="22">
                         <path d="M3 19V4H13V13H3M13 8H19V16H10V13" />
                     </svg>
                 </item-with-tip>
-                <item-with-tip :tip="_T('labels')" v-if="!mainEdit.hasLabels" item-class="mind-main-edit-button" @click="onInvokePropertyFromMainEdit('labels')">
+                <item-with-tip :tip="_T('labels')" v-if="checkAddTools('labels')" item-class="mind-main-edit-button" @click="onInvokePropertyFromMainEdit('labels')">
                     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="22" width="22">
                         <path d="M3 10.5L7 5H19V17H7L3 10.5M6 10.5A2 2 0 1 1 10 10.5A2 2 0 1 1 6 10.5" />
                     </svg>
                 </item-with-tip>
-                <item-with-tip :tip="_T('image')" v-if="!mainEdit.hasImage" item-class="mind-main-edit-button" @click="onInvokePickImageFromMainEdit">
+                <item-with-tip :tip="_T('image')" v-if="checkAddTools('image')" item-class="mind-main-edit-button" @click="onInvokePickImageFromMainEdit">
                     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="22" width="22">
                         <path d="M3 5H18V17H3V5M3 16L7 10L10 13L13 7L18 13" />
                     </svg>
                 </item-with-tip>
-                <item-with-tip :tip="_T('notes')" v-if="!mainEdit.hasNotes" item-class="mind-main-edit-button" @click="onInvokePropertyFromMainEdit('notes')">
+                <item-with-tip :tip="_T('notes')" v-if="checkAddTools('notes')" item-class="mind-main-edit-button" @click="onInvokePropertyFromMainEdit('notes')">
                     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="22" width="22">
                         <path d="M3 1H13L18 6V20H3V1M13 1V6H18M6 4H10M6 7H10M6 10H15M6 13H15M6 16H13" />
                     </svg>
                 </item-with-tip>
-                <item-with-tip :tip="_T('link or attachment')" v-if="!mainEdit.hasHref" item-class="mind-main-edit-button" @click="onInvokePropertyFromMainEdit('href')">
+                <item-with-tip :tip="_T('link or attachment')" v-if="checkAddTools('href')" item-class="mind-main-edit-button" @click="onInvokePropertyFromMainEdit('href')">
                     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="22" width="22">
                         <path d="M9 7L11 5A2 2 0 0 1 15 9L13 11M7 9L5 11A2 2 0 0 0 9 15L11 13M7 13L13 7" />
                     </svg>
@@ -237,6 +237,8 @@ import itemWithTip from "./itemWithTip";
 import { mouseButton, pickFile, imageExtNames } from "./js/utility";
 import * as cmd from "./js/cmd";
 import { get as _T } from "./js/translate";
+import history from "./js/history";
+import CC from "./js/commonConstants";
 
 // 定义默认配置
 const defaultMindConfig = {
@@ -327,6 +329,7 @@ export default {
         return {
             mind: undefined,
             attachments: new AttachmentCollection(),
+            history: new history(),
             mouseAction: undefined,
             mouseLog: undefined,
             inlineInputValue: "",
@@ -347,7 +350,17 @@ export default {
         moveCursor: String,
         zoomCursor: String,
         mindConfig: Object,
-        keyActionMap: Object
+        keyActionMap: Object,
+        showEditTools: {
+            type: Boolean,
+            default: false
+        },
+        attachmentPath: String
+    },
+    computed: {
+        showEditAddingTools() {
+            return this.showEditTools && this.mainEdit && this.mainEdit.addTools && (this.mainEdit.addTools.length > 0);
+        }
     },
     watch: {
         mindConfig(_value) {
@@ -358,6 +371,10 @@ export default {
         _T,
         // 空处理
         nop() {},
+        // 检查是否有定义某个工具
+        checkAddTools(_name) {
+            return this.mainEdit && this.mainEdit.addTools && (this.mainEdit.addTools.indexOf(_name) >= 0);
+        },
         // 提取mind中的预定义元素
         pickDefs() {
             const markerDefs = (this.markerDefs = {});
@@ -367,6 +384,17 @@ export default {
                     collection[item.value] = item.node.outerHTML;
                 }
             }
+        },
+        // 准备附件名称
+        prepareAttachmentName(_name) {
+            return _name ? `${this.attachmentPath ? this.attachmentPath + "/": ""}${_name}`
+                         : `${this.attachmentPath ? this.attachmentPath + "/": ""}${Date.now().toString(16)}-${Math.random().toString(16).substr(2, 3)}`;
+        },
+        // 添加附件
+        addAttachment(_name, _data) {
+            const pathName = this.prepareAttachmentName(_name);
+            const checkRepeat = this.attachments.item(pathName);
+            return this.attachments.item(checkRepeat ? this.prepareAttachmentName() : pathName, _data);
         },
         // 启动鼠标控制动作
         startMouseAction(_action, _log) {
@@ -468,43 +496,65 @@ export default {
                 const newValue = String(this.mainEdit.title).trim();
                 const oriValue = this.mainEdit.topic.topicData("title");
                 if (newValue !== oriValue) {
+                    const id = String(this.mainEdit.topic.id);
                     this.mainEdit.topic.topicData("title", newValue);
+                    this.history.push({
+                        undo: this.setTopicProperty, 
+                        undoThis: this,
+                        undoArgs: [id, { title: oriValue }],
+                        redo: this.setTopicProperty, 
+                        redoThis: this,
+                        redoArgs: [id, { title: newValue }]
+                    });
+                    this.$emit(CC.EVENT_HISTORY, this.history.count);
                 }
             }
             this.mainEdit = undefined;
+            this.$nextTick(() => {
+                this.mind.container.node.focus();
+            });
         },
         // 删除主题
         onDeleteTopic() {
-            if (this.mainEdit && this.mainEdit.topic) {
-                this.mainEdit.topic.remove();
-            }
+            this.mainEdit && this.deleteTopic(this.mainEdit.topic);
             this.mainEdit = undefined;
         },
         // 添加子主题
         onAddSubTopic() {
-            if (this.mainEdit && this.mainEdit.topic) {
-                this.addSubTopic(this.mainEdit.topic);
-            }
+            this.mainEdit && this.addSubTopic(this.mainEdit.topic);
             this.mainEdit = undefined;
         },
         // 添加同级主题
         onAddSiblingTopic() {
-            if (this.mainEdit && this.mainEdit.topic) {
-                this.addSiblingTopic(this.mainEdit.topic);
-            }
+            this.mainEdit && this.addSiblingTopic(this.mainEdit.topic);
             this.mainEdit = undefined;
         },
-        // 从主编辑画面触发属性页
-        onInvokePropertyFromMainEdit(_id) {
-            if (this.mainEdit && this.mainEdit.topic) {
+        // 唤起属性编辑器
+        invokePropertyEditor(_id, _topic) {
+            _topic || (_topic = this.mind.focusTopic);
+            if (_topic) {
                 for (let item of propertyTabs) {
                     if (item.id === _id) {
-                        this.mainEdit.topic.fireEvent(item.events[0], {topic:this.mainEdit.topic});
+                        _topic.fireEvent(item.events[0], {topic:_topic});
                         break;   
                     }
                 }
             }
+        },
+        // 从主编辑画面触发属性页
+        onInvokePropertyFromMainEdit(_id) {
+            this.mainEdit && this.invokePropertyEditor(_id, this.mainEdit.topic);
             this.mainEdit = undefined;
+        },
+        // 唤起图片拾取
+        invokeImagePicker(_topic) {
+            _topic || (_topic = this.mind.focusTopic);
+            if (_topic) {
+                pickFile(imageExtNames).then(_file => {
+                    this.onSetImage(_topic, _file);
+                    this.blurFloatPanel();
+                });
+            }
         },
         // 从主编辑画面触发添加图片
         onInvokePickImageFromMainEdit() {
@@ -559,8 +609,9 @@ export default {
             const propertys = this.propertyData;
             if (propertys) {
                 const panel = this.$refs[_id];
-                if (panel && panel.isModified) {
-                    propertys.modified[_id] = panel.getResult();
+                if (panel) {
+                    (typeof panel.blur === "function") && panel.blur();
+                    panel.isModified && (propertys.modified[_id] = panel.getResult());
                 }
             }
         },
@@ -578,8 +629,19 @@ export default {
             const propertys = this.propertyData;
             if (propertys) {
                 this.$refs.propertyPanel.blurCurrentPanel();
-                if (propertys.topic && propertys.modified && (Object.getOwnPropertyNames(propertys.modified).length > 0)) {
-                    propertys.topic.topicData(propertys.modified);
+                const topic = propertys.topic;
+                if (topic && propertys.modified && (Object.getOwnPropertyNames(propertys.modified).length > 0)) {
+                    const oriProperty = topic.topicData();
+                    topic.topicData(propertys.modified);
+                    this.history.push({
+                        undo: this.setTopicProperty, 
+                        undoThis: this,
+                        undoArgs: [String(topic.id), Object.assign({href:null, labels:null, markers:null, notes:null}, oriProperty)],
+                        redo: this.setTopicProperty, 
+                        redoThis: this,
+                        redoArgs: [String(topic.id), Object.assign({href:null, labels:null, markers:null, notes:null}, topic.topicData())]
+                    });
+                    this.$emit(CC.EVENT_HISTORY, this.history.count);
                     this.propertyData = undefined;
                 }
             }
@@ -595,8 +657,7 @@ export default {
         // 在链接编辑页面添加了附件
         onInsertAttachmentForHref(_file, _cb) {
             if (_file) {
-                const checkRepeat = this.attachments.item(_file.name);
-                const {name} = this.attachments.item(checkRepeat ? undefined : _file.name, _file);
+                const {name} = this.addAttachment(_file.name, _file);
                 (typeof _cb === "function") && _cb(name);
                 return true;
             }
@@ -616,11 +677,23 @@ export default {
         },
         // 生效对图片大小的修改
         onResizeImage(_topic, _width, _height) {
-            const image = _topic.topicData("image");
-            if (image) {
-                image.width = _width;
-                image.height = _height;
-                _topic && _topic.topicData("image", image);
+            const oriImage = _topic && _topic.topicData("image");
+            if (oriImage) {
+                const newImage = {
+                    src: oriImage.src,
+                    width: _width,
+                    height: _height
+                };
+                _topic.topicData("image", newImage);
+                this.history.push({
+                    undo: this.setTopicProperty, 
+                    undoThis: this,
+                    undoArgs: [String(_topic.id), {image: oriImage}],
+                    redo: this.setTopicProperty, 
+                    redoThis: this,
+                    redoArgs: [String(_topic.id), {image: newImage}]
+                });
+                this.$emit(CC.EVENT_HISTORY, this.history.count);
                 this.showImageCtrlBox(_topic);
                 this.$forceUpdate();
             }
@@ -628,17 +701,27 @@ export default {
         // 设置图片
         onSetImage(_topic, _file) {
             if (_topic && _file) {
-                const checkRepeat = this.attachments.item(_file.name);
-                const {name, value:attachment} = this.attachments.item(checkRepeat ? undefined : _file.name, _file);
+                const {name, value:attachment} = this.addAttachment(_file.name, _file);
                 const img = new Image();
                 img.onload = () => {
                     const {width:imgWidth} = _topic.titleZone;
-                    const imgHeight = img.height * imgWidth / img.width
-                    _topic.topicData("image", {
+                    const imgHeight = img.height * imgWidth / img.width;
+                    const oriImage = _topic.topicData("image") || null;
+                    const newImage = {
                         src: Constants.ATTACHMENT_LINK_PREFIX + name,
                         width: imgWidth,
                         height: imgHeight
+                    };
+                    _topic.topicData("image", newImage);
+                    this.history.push({
+                        undo: this.setTopicProperty, 
+                        undoThis: this,
+                        undoArgs: [String(_topic.id), {image: oriImage}],
+                        redo: this.setTopicProperty, 
+                        redoThis: this,
+                        redoArgs: [String(_topic.id), {image: newImage}]
                     });
+                    this.$emit(CC.EVENT_HISTORY, this.history.count);
                     this.showImageCtrlBox(_topic);
                     this.$forceUpdate();
                 }
@@ -647,7 +730,19 @@ export default {
         },
         // 清除图片
         onDeleteImage(_topic) {
-            _topic && _topic.topicData("image", null);
+            if (_topic) {
+                const oriImage = _topic.topicData("image") || null;
+                _topic.topicData("image", null);
+                this.history.push({
+                    undo: this.setTopicProperty, 
+                    undoThis: this,
+                    undoArgs: [String(_topic.id), {image: oriImage}],
+                    redo: this.setTopicProperty, 
+                    redoThis: this,
+                    redoArgs: [String(_topic.id), {image: null}]
+                });
+                this.$emit(CC.EVENT_HISTORY, this.history.count);
+            }
             this.imageCtrlData = undefined;
         },
         // 按键按下，转义到按键对应的动作映射表中去
@@ -666,6 +761,32 @@ export default {
                 (typeof cmdFn === "function") ? cmdFn.call(this, this.mind.focusTopic) : console.warn(`Unknown Command: ${fn}`);
                 Event.handledEvent(_event);
             }
+        },
+        // 拖拽的历史处理
+        procDragHistory(_topicID, _direction, _parentID, _siblingID) {
+            const topic = this.mind.getTopicByID(_topicID);
+            const parent = this.mind.getTopicByID(_parentID);
+            const sibling = _siblingID ? this.mind.getTopicByID(_siblingID) : undefined;
+            if (topic) {
+                topic.direction(_direction);
+                sibling ? topic.insertNextTo(sibling, true) 
+                        : topic.insertTo(parent, true, true);
+                topic.focus(true);
+                this.toCenter(topic);
+            }
+        },
+        // 拖拽结束的处理
+        onEndDrag(_event) {
+            this.blurFloatPanel();
+            const value = _event.detail.value;
+            value && (this.history.push({
+                undo: this.procDragHistory, 
+                undoThis: this,
+                undoArgs: [String(value.dragingTopic.id), value.originDirection, String(value.originParent.id), value.originSibling ? String(value.originSibling.id) : undefined],
+                redo: this.procDragHistory, 
+                redoThis: this,
+                redoArgs: [String(value.dragingTopic.id), value.newDirection, String(value.newParent.id), value.newSibling ? String(value.newSibling.id) : undefined]
+            }), this.$emit(CC.EVENT_HISTORY, this.history.count));
         }
     },
     mounted() {
@@ -684,7 +805,7 @@ export default {
         this.mind.on(EVENT.EVENT_INVOKE_IMAGE, this.onInvokeImageControl.bind(this));
         this.mind.on(EVENT.EVENT_QUERY_ATTACHMENT, this.onQueryAttachmentURLEvent.bind(this));
         this.mind.on(EVENT.EVENT_FOCUS_CHANGE, (_event) => this.$emit("focus-topic-changed", _event.detail.value));
-        this.mind.on(EVENT.EVENT_END_DRAG, this.blurFloatPanel.bind(this));
+        this.mind.on(EVENT.EVENT_END_DRAG, this.onEndDrag.bind(this));
     }
 }
 </script>

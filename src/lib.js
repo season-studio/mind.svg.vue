@@ -1,6 +1,8 @@
 import $mindSvgView from "./components/mindSvgView";
 import $itemWithTip from "./components/itemWithTip";
+import $history from "./components/js/history";
 import * as $translate from "./components/js/translate";
+import * as $utility from "./components/js/utility";
 import zhCN from "./components/lang/zh-cn.json";
 
 function declareExportItem(_desc) {
@@ -20,9 +22,11 @@ function declareExportItem(_desc) {
 
 export const mindSvgView = declareExportItem({mindSvgView:$mindSvgView});
 export const mindItemWithTip = declareExportItem({mindItemWithTip:$itemWithTip});
+export const history = $history;
 export const translate = $translate;
+export const utility = $utility;
 export const lang = {
-    zhCN
+    "zh-cn": zhCN
 };
 export default declareExportItem({
     mindSvgView,
